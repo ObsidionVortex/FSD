@@ -13,6 +13,11 @@ env/
 ENV/
 */.venv/
 
+# Environment variables
+.env
+.env.*
+!.env.example
+
 # Django
 *.log
 local_settings.py
