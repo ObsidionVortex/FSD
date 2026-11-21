@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Page Not Found | Northstar{% endblock %}
+
+{% block extra_head %}
+<style>
+    .notfound-card {
+        background: #ffffff;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-xl);
+        padding: clamp(36px, 6vw, 64px) 24px;
+        max-width: 620px;
+        margin: 40px auto;
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .notfound-badge {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: clamp(3.5rem, 8vw, 5rem);
+        font-weight: 800;
+        color: var(--primary);
+        line-height: 1;
+        margin-bottom: 16px;
+        letter-spacing: -0.05em;
+    }
+
+    .notfound-links {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 28px;
+        flex-wrap: wrap;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="notfound-card">
+        <div class="notfound-badge">404</div>
+        <h1 class="page-heading" style="margin-bottom: 12px;">We couldn't find that page</h1>
+        <p class="intro" style="margin: 0 auto; max-width: 440px;">The link may be outdated, or the product or page may have moved.</p>
+
+        <div class="notfound-links">
+            <a class="button button-lg" href="{% url 'home' %}">
+                Back to the shop
+            </a>
+            <a class="button button-secondary button-lg" href="{% url 'view_cart' %}">
+                View Your Cart
+            </a>
+        </div>
+    </div>
+{% endblock %}

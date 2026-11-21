@@ -1,0 +1,496 @@
+{% extends 'base.html' %}
+
+{% block title %}Shop Curated Essentials | Northstar{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Hero Banner */
+    .hero-banner {
+        background: linear-gradient(135deg, #064e3b 0%, #0f766e 60%, #115e59 100%);
+        border-radius: var(--radius-xl);
+        padding: clamp(32px, 5vw, 56px);
+        color: #ffffff;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 36px;
+        box-shadow: 0 12px 30px rgba(15, 118, 110, 0.18);
+    }
+
+    .hero-banner::after {
+        content: '✦';
+        position: absolute;
+        right: 4%;
+        bottom: -20px;
+        font-size: clamp(120px, 20vw, 240px);
+        color: rgba(255, 255, 255, 0.05);
+        font-family: 'Space Grotesk', sans-serif;
+        line-height: 1;
+        pointer-events: none;
+    }
+
+    .hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        color: #e6fffa;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: 5px 12px;
+        border-radius: var(--radius-full);
+        margin-bottom: 16px;
+    }
+
+    .hero-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: clamp(2rem, 4vw, 3rem);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        line-height: 1.15;
+        margin-bottom: 12px;
+        max-width: 680px;
+        color: #ffffff;
+    }
+
+    .hero-desc {
+        color: #ccfbf1;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        max-width: 580px;
+        margin-bottom: 24px;
+    }
+
+    .hero-features {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-top: 10px;
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        padding-top: 20px;
+    }
+
+    .hero-feature-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #f0fdfa;
+    }
+
+    .hero-feature-item svg {
+        color: #34d399;
+    }
+
+    /* Filter & Search Bar */
+    .shop-toolbar {
+        background: #ffffff;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        padding: 16px 20px;
+        margin-bottom: 28px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .search-form {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1 1 320px;
+        max-width: 540px;
+    }
+
+    .search-input-wrap {
+        position: relative;
+        flex: 1;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted-light);
+        pointer-events: none;
+    }
+
+    .search-input-wrap input {
+        padding-left: 42px;
+        padding-right: 14px;
+        height: 44px;
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 8px 14px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        border-radius: var(--radius-full);
+        border: 1px solid var(--line);
+        background: #ffffff;
+        color: var(--ink-light);
+        cursor: pointer;
+        transition: all 0.15s ease;
+        text-decoration: none;
+    }
+
+    .filter-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        text-decoration: none;
+    }
+
+    .filter-btn.active {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #ffffff;
+    }
+
+    .sort-select {
+        height: 44px;
+        padding: 8px 14px;
+        font-size: 0.88rem;
+        border-radius: var(--radius-md);
+        border: 1.5px solid #cbd5e1;
+        background-color: #ffffff;
+        color: var(--ink);
+        width: auto;
+    }
+
+    /* Product Grid */
+    .product-grid {
+        display: grid;
+        gap: 24px;
+        grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    }
+
+    .product-card {
+        background: #ffffff;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        position: relative;
+    }
+
+    .product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: #cbd5e1;
+    }
+
+    .product-image-wrap {
+        position: relative;
+        background: #f1f5f9;
+        height: 230px;
+        width: 100%;
+        overflow: hidden;
+        display: block;
+    }
+
+    .product-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.35s ease;
+    }
+
+    .product-card:hover .product-image {
+        transform: scale(1.05);
+    }
+
+    .image-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #f0fdfa 0%, #e2e8f0 100%);
+        color: var(--primary);
+        font-size: 2.4rem;
+        font-weight: 300;
+    }
+
+    .image-placeholder span {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .card-badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        z-index: 2;
+    }
+
+    .card-body {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .product-title {
+        font-size: 1.12rem;
+        font-weight: 700;
+        line-height: 1.35;
+        margin-bottom: 8px;
+    }
+
+    .product-title a {
+        color: var(--ink);
+        text-decoration: none;
+    }
+
+    .product-title a:hover {
+        color: var(--primary);
+    }
+
+    .price-stock-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+
+    .price {
+        font-family: 'Space Grotesk', sans-serif;
+        color: var(--primary);
+        font-size: 1.35rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+
+    .stock {
+        font-size: 0.84rem;
+        color: var(--muted);
+        font-weight: 500;
+    }
+
+    .product-description-snippet {
+        color: var(--muted);
+        font-size: 0.88rem;
+        line-height: 1.5;
+        margin-bottom: 18px;
+        flex: 1;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .card-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: auto;
+    }
+
+    .card-actions form {
+        flex: 1;
+        margin: 0;
+    }
+
+    .card-actions form button {
+        width: 100%;
+    }
+
+    .admin-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px dashed var(--line);
+        font-size: 0.84rem;
+        font-weight: 600;
+    }
+
+    .admin-actions a {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <!-- Hero Banner -->
+    <section class="hero-banner">
+        <div class="hero-tag">
+            <span>✦</span> Premium Storefront
+        </div>
+        <h1 class="hero-title">Find your next favorite</h1>
+        <p class="hero-desc">Thoughtfully chosen essentials, ready to make everyday better.</p>
+
+        <div class="hero-features">
+            <div class="hero-feature-item">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                <span>Express 2-Day Delivery</span>
+            </div>
+            <div class="hero-feature-item">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                <span>100% Genuine Quality</span>
+            </div>
+            <div class="hero-feature-item">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                <span>Pay on Delivery (COD)</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Toolbar: Search, Filters, and Admin CTA -->
+    <div class="shop-toolbar">
+        <form class="search-form" method="get" role="search">
+            {% if stock_filter %}<input type="hidden" name="stock" value="{{ stock_filter }}">{% endif %}
+            {% if sort_by %}<input type="hidden" name="sort" value="{{ sort_by }}">{% endif %}
+            <div class="search-input-wrap">
+                <svg class="search-icon" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input type="search" name="q" value="{{ query }}" placeholder="Search products by title or keywords..." aria-label="Search products">
+            </div>
+            <button type="submit">Search</button>
+            {% if query %}
+                <a class="button button-secondary" href="{% url 'home' %}" title="Clear search">✕</a>
+            {% endif %}
+        </form>
+
+        <div class="filter-group">
+            <a class="filter-btn {% if not stock_filter %}active{% endif %}" href="{% url 'home' %}{% if query %}?q={{ query }}{% endif %}">
+                All Products
+            </a>
+            <a class="filter-btn {% if stock_filter == 'in_stock' %}active{% endif %}" href="{% url 'home' %}?stock=in_stock{% if query %}&q={{ query }}{% endif %}">
+                In Stock Only
+            </a>
+
+            <!-- Sort selector -->
+            <select class="sort-select" onchange="location = this.value;" aria-label="Sort products">
+                <option value="{% url 'home' %}?{% if query %}q={{ query }}&{% endif %}{% if stock_filter %}stock={{ stock_filter }}&{% endif %}sort=" {% if not sort_by %}selected{% endif %}>Sort: Featured</option>
+                <option value="{% url 'home' %}?{% if query %}q={{ query }}&{% endif %}{% if stock_filter %}stock={{ stock_filter }}&{% endif %}sort=newest" {% if sort_by == 'newest' %}selected{% endif %}>Sort: Newest First</option>
+                <option value="{% url 'home' %}?{% if query %}q={{ query }}&{% endif %}{% if stock_filter %}stock={{ stock_filter }}&{% endif %}sort=price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                <option value="{% url 'home' %}?{% if query %}q={{ query }}&{% endif %}{% if stock_filter %}stock={{ stock_filter }}&{% endif %}sort=price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+            </select>
+
+            {% if user.is_staff %}
+                <a class="button button-secondary" href="{% url 'add_product' %}">＋ Add product</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Active Search Notice -->
+    {% if query %}
+        <p class="muted" style="margin-bottom: 20px;">
+            Showing results for <strong>"{{ query }}"</strong> ({{ products|length }} found) &bull; <a href="{% url 'home' %}">Clear search</a>
+        </p>
+    {% endif %}
+
+    <!-- Product Grid -->
+    <section class="product-grid" aria-label="Products">
+        {% for product in products %}
+            <article class="product-card">
+                <!-- Stock Badge Overlay -->
+                <div class="card-badge">
+                    {% if product.stock > 5 %}
+                        <span class="badge badge-success">
+                            <span class="pulse-dot"></span> In Stock
+                        </span>
+                    {% elif product.stock > 0 %}
+                        <span class="badge badge-warning">
+                            Only {{ product.stock }} left
+                        </span>
+                    {% else %}
+                        <span class="badge badge-danger">
+                            Sold Out
+                        </span>
+                    {% endif %}
+                </div>
+
+                <!-- Product Thumbnail Link -->
+                <a class="product-image-wrap" href="{% url 'product_detail' product.id %}" aria-label="View {{ product.name }}">
+                    {% if product.image %}
+                        <img class="product-image" src="{{ product.image }}" alt="{{ product.name }}" loading="lazy" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'image-placeholder\'>✦<span>{{ product.name }}</span></div>';">
+                    {% else %}
+                        <div class="image-placeholder" aria-hidden="true">
+                            ✦
+                            <span>{{ product.name|truncatechars:18 }}</span>
+                        </div>
+                    {% endif %}
+                </a>
+
+                <div class="card-body">
+                    <h2 class="product-title">
+                        <a href="{% url 'product_detail' product.id %}">{{ product.name }}</a>
+                    </h2>
+
+                    <div class="price-stock-row">
+                        <span class="price">₹{{ product.price }}</span>
+                        <span class="stock">{% if product.stock > 0 %}{{ product.stock }} in stock{% else %}Currently out of stock{% endif %}</span>
+                    </div>
+
+                    {% if product.description %}
+                        <p class="product-description-snippet">{{ product.description }}</p>
+                    {% endif %}
+
+                    <div class="card-actions">
+                        {% if user.is_authenticated and product.stock > 0 %}
+                            <form method="post" action="{% url 'add_to_cart' product.id %}">
+                                {% csrf_token %}
+                                <button type="submit">
+                                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                                    Add to cart
+                                </button>
+                            </form>
+                        {% elif not user.is_authenticated and product.stock > 0 %}
+                            <a class="button button-full" href="{% url 'login' %}">Log in to shop</a>
+                        {% else %}
+                            <button class="button button-secondary button-full" type="button" disabled style="opacity: 0.6; cursor: not-allowed;">Out of Stock</button>
+                        {% endif %}
+
+                        <a class="button button-secondary" href="{% url 'product_detail' product.id %}" title="View Details">Details</a>
+                    </div>
+
+                    {% if user.is_staff %}
+                        <div class="admin-actions">
+                            <a href="{% url 'update_product' product.id %}" style="color: var(--ink-light);">
+                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                Update
+                            </a>
+                            <a href="{% url 'delete_product' product.id %}" style="color: var(--danger);">
+                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                Delete
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </article>
+        {% empty %}
+            <div class="empty-box" style="grid-column: 1 / -1;">
+                <div class="empty-icon">🔍</div>
+                <h3>No products found</h3>
+                <p class="empty-state">No products found. Try a different search.</p>
+                <a class="button" href="{% url 'home' %}">View All Products</a>
+            </div>
+        {% endfor %}
+    </section>
+{% endblock %}

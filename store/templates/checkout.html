@@ -1,0 +1,353 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout | Northstar{% endblock %}
+
+{% block extra_head %}
+<style>
+    .checkout-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr);
+        gap: 36px;
+        align-items: start;
+        margin-top: 24px;
+    }
+
+    .checkout-section {
+        background: #ffffff;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-xl);
+        padding: clamp(20px, 4vw, 32px);
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .section-step-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--line-light);
+    }
+
+    .step-number {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.9rem;
+    }
+
+    .step-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--ink);
+    }
+
+    .delivery-options-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .option-card {
+        border: 1.5px solid var(--line);
+        border-radius: var(--radius-md);
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .option-card.selected {
+        border-color: var(--primary);
+        background: var(--primary-light);
+    }
+
+    .option-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .option-radio {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--primary);
+    }
+
+    .option-title {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--ink);
+    }
+
+    .option-desc {
+        font-size: 0.85rem;
+        color: var(--muted);
+    }
+
+    /* Sticky Checkout Order Summary */
+    .checkout-summary {
+        background: #ffffff;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-xl);
+        padding: 28px;
+        box-shadow: var(--shadow-sm);
+        position: sticky;
+        top: 90px;
+    }
+
+    .summary-heading {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--line-light);
+    }
+
+    .checkout-items-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        max-height: 280px;
+        overflow-y: auto;
+        padding-right: 4px;
+        margin-bottom: 20px;
+    }
+
+    .checkout-item-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        font-size: 0.92rem;
+    }
+
+    .checkout-item-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .checkout-item-thumb {
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-sm);
+        object-fit: cover;
+        background: var(--line-light);
+        border: 1px solid var(--line);
+    }
+
+    .checkout-item-name {
+        font-weight: 600;
+        color: var(--ink);
+        line-height: 1.2;
+    }
+
+    .checkout-item-qty {
+        font-size: 0.8rem;
+        color: var(--muted);
+    }
+
+    .summary-calc-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        font-size: 0.95rem;
+        color: var(--ink-light);
+    }
+
+    .summary-grand-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin: 20px 0;
+        padding-top: 16px;
+        border-top: 1.5px dashed var(--line);
+    }
+
+    .grand-total-val {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--primary);
+    }
+
+    .security-notice {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--canvas);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        padding: 12px 14px;
+        font-size: 0.84rem;
+        color: var(--muted);
+        margin-top: 20px;
+    }
+
+    .security-notice svg {
+        color: var(--primary);
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 860px) {
+        .checkout-layout {
+            grid-template-columns: 1fr;
+        }
+        .checkout-summary {
+            position: static;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <h1 class="page-heading">Checkout</h1>
+    <p class="intro">Complete your shipping information to place your order.</p>
+
+    <div class="checkout-layout">
+        <!-- Left: Form -->
+        <div>
+            <form method="POST">
+                {% csrf_token %}
+
+                <!-- Step 1: Address -->
+                <section class="checkout-section">
+                    <div class="section-step-header">
+                        <span class="step-number">1</span>
+                        <h2 class="step-title">Delivery Address</h2>
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <label for="{{ form.address.id_for_label }}">
+                            Full Street Address & Landmark
+                        </label>
+                        {{ form.address }}
+                        {% if form.address.errors %}
+                            <div class="errorlist">
+                                {% for error in form.address.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <span class="helptext">Include house/flat number, building name, street, city, state, and 6-digit PIN code.</span>
+                    </div>
+                </section>
+
+                <!-- Step 2: Delivery Speed -->
+                <section class="checkout-section">
+                    <div class="section-step-header">
+                        <span class="step-number">2</span>
+                        <h2 class="step-title">Delivery Speed</h2>
+                    </div>
+
+                    <div class="delivery-options-grid">
+                        <label class="option-card selected">
+                            <div class="option-left">
+                                <input class="option-radio" type="radio" name="delivery_method" value="standard" checked>
+                                <div>
+                                    <div class="option-title">Standard Express Delivery</div>
+                                    <div class="option-desc">Estimated delivery in 2&ndash;3 business days</div>
+                                </div>
+                            </div>
+                            <span class="badge badge-success">FREE</span>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Step 3: Payment Method -->
+                <section class="checkout-section">
+                    <div class="section-step-header">
+                        <span class="step-number">3</span>
+                        <h2 class="step-title">Payment Method</h2>
+                    </div>
+
+                    <div class="delivery-options-grid">
+                        <label class="option-card selected">
+                            <div class="option-left">
+                                <input class="option-radio" type="radio" name="payment_method" value="cod" checked>
+                                <div>
+                                    <div class="option-title">Payment Method: Cash on Delivery</div>
+                                    <div class="option-desc">Pay cash or scan UPI upon doorstep delivery. No advance payment required.</div>
+                                </div>
+                            </div>
+                            <span class="badge badge-success">Verified</span>
+                        </label>
+                    </div>
+
+                    <div style="margin-top: 28px;">
+                        <button class="button button-lg button-full" type="submit">
+                            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            Place Order
+                        </button>
+                    </div>
+                </section>
+            </form>
+        </div>
+
+        <!-- Right: Order Summary -->
+        <aside class="checkout-summary">
+            <h2 class="summary-heading">Order Summary</h2>
+
+            {% if cart_items %}
+                <div class="checkout-items-list">
+                    {% for item in cart_items %}
+                        <div class="checkout-item-row">
+                            <div class="checkout-item-info">
+                                {% if item.product.image %}
+                                    <img class="checkout-item-thumb" src="{{ item.product.image }}" alt="{{ item.product.name }}" onerror="this.style.display='none';">
+                                {% endif %}
+                                <div>
+                                    <div class="checkout-item-name">{{ item.product.name }}</div>
+                                    <div class="checkout-item-qty">Qty: {{ item.quantity }} × ₹{{ item.product.price }}</div>
+                                </div>
+                            </div>
+                            <strong style="color: var(--ink);">₹{{ item.subtotal }}</strong>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="summary-calc-row">
+                <span>Items Subtotal</span>
+                <strong style="color: var(--ink);">₹{{ total }}</strong>
+            </div>
+
+            <div class="summary-calc-row">
+                <span>Shipping & Handling</span>
+                <span class="badge badge-success">FREE</span>
+            </div>
+
+            <div class="summary-calc-row">
+                <span>Taxes & Duties</span>
+                <span class="muted">Included</span>
+            </div>
+
+            <div class="summary-grand-total">
+                <span style="font-weight: 800; font-size: 1.1rem;">Total Amount</span>
+                <span class="grand-total-val">₹{{ total }}</span>
+            </div>
+
+            <div class="security-notice">
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                <span>Safe & Secure Order Placement. Guaranteed doorstep delivery with buyer protection.</span>
+            </div>
+
+            <div style="margin-top: 16px; text-align: center;">
+                <a href="{% url 'view_cart' %}" style="font-size: 0.88rem; font-weight: 600;">&larr; Return to Cart</a>
+            </div>
+        </aside>
+    </div>
+{% endblock %}
